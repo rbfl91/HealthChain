@@ -8,7 +8,7 @@ public class Transaction {
 	public PublicKey reciepient; //Recipients address/public key.
 	public float value; //Contains the amount we wish to send to the recipient. 
 	// HERE
-	public String medicalData; //The medical data sent in the transaction.
+	public Data data; //The medical data sent in the transaction.
 	public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
 	
 	public ArrayList<TransactionInput> inputs = new ArrayList<TransactionInput>();
@@ -18,12 +18,24 @@ public class Transaction {
 	
 	// HERE
 	// Constructor: 
-	public Transaction(PublicKey from, PublicKey to, float value, String medicalData,  ArrayList<TransactionInput> inputs) {
+	public Transaction(PublicKey from, PublicKey to, String data, boolean isPayment,  ArrayList<TransactionInput> inputs) {
 		this.sender = from;
 		this.reciepient = to;
-		this.value = value;
 		this.inputs = inputs; 
-		this.medicalData = medicalData;
+		this.data = new Data (isPayment, data);  
+		
+		if (this.data.isPayment) { 
+			
+			System.out.println("It's a payment transaction!");
+			this.value = Float.parseFloat(this.data.getData()); 
+			System.out.println("The transaction value is: " + this.value);
+		} 
+		else 
+		{  
+			System.out.println("It's a data transaction!");
+			this.value = 0;
+		}
+		
 	}
 	
 	public boolean processTransaction() {
@@ -34,14 +46,15 @@ public class Transaction {
 		}
 				
 		//Gathers transaction inputs (Making sure they are unspent):
+		// HERE STATIC
 		for(TransactionInput i : inputs) {
-			i.UTXO = HealthChain.UTXOs.get(i.transactionOutputId);
+			i.UTXO = Main.UTXOs.get(i.transactionOutputId);
 		}
 
 		//Checks if transaction is valid:
-		if(getInputsValue() < HealthChain.minimumTransaction) {
+		if(getInputsValue() < HealthChainPay.minimumTransaction) {
 			System.out.println("Transaction Inputs too small: " + getInputsValue());
-			System.out.println("Please enter the amount greater than " + HealthChain.minimumTransaction);
+			System.out.println("Please enter the amount greater than " + HealthChainPay.minimumTransaction);
 			return false;
 		}
 		
@@ -51,15 +64,17 @@ public class Transaction {
 		outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
 		outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender		
 				
-		//Add outputs to Unspent list
+		//Add outputs to Unspent list 
+		//HERE STATIC
 		for(TransactionOutput o : outputs) {
-			HealthChain.UTXOs.put(o.id , o);
+			Main.UTXOs.put(o.id , o);
 		}
 		
-		//Remove transaction inputs from UTXO lists as spent:
+		//Remove transaction inputs from UTXO lists as spent: 
+		// HERE STATIC
 		for(TransactionInput i : inputs) {
 			if(i.UTXO == null) continue; //if Transaction can't be found skip it 
-			HealthChain.UTXOs.remove(i.UTXO.id);
+			Main.UTXOs.remove(i.UTXO.id);
 		}
 		
 		return true;
@@ -76,13 +91,13 @@ public class Transaction {
 	
 	// HERE
 	public void generateSignature(PrivateKey privateKey) {
-		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value) + medicalData;
+		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value) + this.data.getData();
 		signature = StringUtil.applyECDSASig(privateKey,data);		
 	}
 	
 	// HERE
 	public boolean verifySignature() {
-		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value) + medicalData;
+		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value) + this.data.getData();
 		return StringUtil.verifyECDSASig(sender, data, signature);
 	}
 	
@@ -100,7 +115,7 @@ public class Transaction {
 		return StringUtil.applySha256(
 				StringUtil.getStringFromKey(sender) +
 				StringUtil.getStringFromKey(reciepient) +
-				Float.toString(value) + medicalData + sequence
+				Float.toString(value) + this.data.getData() + sequence
 				);
 	}
 }
