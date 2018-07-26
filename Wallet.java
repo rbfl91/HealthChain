@@ -9,13 +9,11 @@ public class Wallet {
 	public PrivateKey privateKey;
 	public PublicKey publicKey;
 	
-	public String myData;  
-	
 	public HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 	
 	public Wallet() {
+		
 		generateKeyPair(); 
-		myData = null;
 	}
 		
 	// Generate Elliptic Curve pair of keys:
@@ -36,9 +34,10 @@ public class Wallet {
 		}
 	}
 	
+	// HERE STATIC
 	public float getBalance() {
 		float total = 0;	
-        for (Map.Entry<String, TransactionOutput> item: HealthChain.UTXOs.entrySet()){
+        for (Map.Entry<String, TransactionOutput> item: Main.UTXOs.entrySet()){
         	TransactionOutput UTXO = item.getValue();
             if(UTXO.isMine(publicKey)) { //if output belongs to me ( if coins belong to me )
             	UTXOs.put(UTXO.id,UTXO); //add it to our list of unspent transactions.
@@ -48,7 +47,8 @@ public class Wallet {
 		return total;
 	}
 	
-	public Transaction sendFunds(PublicKey _recipient,float value, String medicalData) {
+	public Transaction sendFunds(PublicKey _recipient, float value) {
+		
 		if(getBalance() < value) {
 			System.out.println("#Not Enough funds to send transaction. Transaction Discarded.");
 			return null;
@@ -63,7 +63,7 @@ public class Wallet {
 			if(total > value) break;
 		}
 		
-		Transaction newTransaction = new Transaction(publicKey, _recipient , value, medicalData, inputs);
+		Transaction newTransaction = new Transaction(publicKey, _recipient , String.valueOf(value), true, inputs);
 		newTransaction.generateSignature(privateKey);
 		
 		for(TransactionInput input: inputs){
@@ -71,6 +71,13 @@ public class Wallet {
 		}
 		
 		return newTransaction;
-	}
+	}  
 	
+	public Transaction sendData(PublicKey _recipient, String data) { 
+		
+		Transaction newTransaction = new Transaction(publicKey, _recipient , data, false, null);
+		newTransaction.generateSignature(privateKey);
+		
+		return newTransaction;
+	} 
 }
