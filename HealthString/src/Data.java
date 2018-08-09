@@ -5,10 +5,13 @@ public class Data {
 	
 	public boolean isPayment;
 	public float value; 
-	public String medicalData;
+	public String medicalData; 
+	public Consultation consult;
+	
+	
 	
 	//Data Constructor.  
-	public Data(boolean isPayment, String data) {
+	public Data(boolean isPayment, String data, Consultation consult) {
 		
 		this.isPayment = isPayment;
 		
@@ -17,9 +20,10 @@ public class Data {
 			this.value = Float.parseFloat(data); 
 			this.medicalData = null;
 		} 
-		else { 
+		else {  
 			
-			this.medicalData = data;
+			this.consult = consult;
+			this.medicalData = consult.getId();
 		}
 	
 	}
@@ -38,6 +42,14 @@ public class Data {
 		}
 	
 		return toReturn;
+	}
+	
+	public void printConsult () {
+		
+		System.out.println("Date = " + this.consult.date); 
+		System.out.println("Date = " + this.consult.type); 
+		System.out.println("Patient = " + this.consult.patient.getName()); 
+		System.out.println("Doctor = " + this.consult.doctor.getName());
 	}
 
 }

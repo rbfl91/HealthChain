@@ -63,7 +63,7 @@ public class Wallet {
 			if(total > value) break;
 		}
 		
-		Transaction newTransaction = new Transaction(publicKey, _recipient , String.valueOf(value), true, inputs);
+		Transaction newTransaction = new Transaction(publicKey, _recipient , String.valueOf(value), null, true, inputs);
 		newTransaction.generateSignature(privateKey);
 		
 		for(TransactionInput input: inputs){
@@ -73,9 +73,9 @@ public class Wallet {
 		return newTransaction;
 	}  
 	
-	public Transaction sendData(PublicKey _recipient, String data) { 
+	public Transaction sendData(PublicKey _recipient, Consultation consult) { 
 		
-		Transaction newTransaction = new Transaction(publicKey, _recipient , data, false, null);
+		Transaction newTransaction = new Transaction(publicKey, _recipient , "0", consult, false, null);
 		newTransaction.generateSignature(privateKey);
 		
 		return newTransaction;

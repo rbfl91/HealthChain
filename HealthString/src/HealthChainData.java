@@ -81,11 +81,10 @@ public class HealthChainData {
 			
 			for (Transaction transaction : block.transactions) { 
 				
-				System.out.println(transaction.data.getData());
-				
-				if (transaction.reciepient.equals(doctor) && transaction.sender.equals(patient) && !transaction.data.isPayment) { 
+				if (transaction.reciepient.equals(patient) && transaction.sender.equals(doctor) && !transaction.data.isPayment) { 
 					
 					System.out.println(transaction.data.getData());
+					transaction.data.printConsult();
 				}
 			} 
 			i++;

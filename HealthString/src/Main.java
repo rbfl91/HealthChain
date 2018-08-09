@@ -15,47 +15,72 @@ public class Main {
 	public static HealthChainPay chainPay = new HealthChainPay(); 
 	public static HealthChainData chainData = new HealthChainData();
 	
-	// Wallets (used for both blockchains)
-	public static Wallet walletA;
-	public static Wallet walletB; 
-	
 	// The first payment transaction 
-	public static Transaction genesisTransaction;
+	public static Transaction genesisTransaction;  
+	
+	// The data blockchain genesis transaction 
+	public static Transaction genesisTransactionData; 
+	
+	// The consultation price
+	public static float consultPrice = 90; 
+	
+	// Flag to check if the payment has been made 
+	public static Boolean hasPayed;
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub  
 		
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); //Setup Bouncey castle as a Security Provider
 				
-		Patient patient1 = new Patient ("Pedro"); 
-		Doctor doctor1 = new Doctor ("Douglas");  
-		Doctor doctor2 = new Doctor ("Julio");
+		Address addr1 = new Address ("Nottingham", "UK", "Mount Street", "NG1 6HE", "52.954783, -1.158109"); 
+		Address addr2 = new Address ("Nottingham", "UK", "New Castle Road", "NG1 6HE", "52.954783, -1.158109");
 		
-		Wallet coinbase = new Wallet();
+		Patient patient1 = new Patient ("Pedro", "pedro1", "1234", addr1); 
+		Doctor doctor1 = new Doctor ("Douglas", "douglas1", "4321", addr2);   
+		
+		Wallet coinbase = new Wallet(); // The system's "bank" wallet
 		
 		//create genesis transaction, which sends 100 coins to Pedro's wallet: 
-		genesisTransaction = new Transaction(coinbase.publicKey, patient1.getWallet().publicKey, "100", true, null);
+		genesisTransaction = new Transaction(coinbase.publicKey, patient1.getWallet().publicKey, "100", null, true, null);
 		genesisTransaction.generateSignature(coinbase.privateKey);	 //manually sign the genesis transaction	
 		genesisTransaction.transactionId = "0"; //manually set the transaction id
 		genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId)); //manually add the Transactions Output
 		UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); //its important to store our first transaction in the UTXOs list.
 		
-		System.out.println("Creating and Mining Genesis block... ");
+		System.out.println("Creating and Mining Payment Genesis block... ");
 		Block genesis = new Block("0");
 		genesis.addTransaction(genesisTransaction);
-		chainPay.addBlock(genesis); 
+		chainPay.addBlock(genesis);   
 		
-		patient1.makePayment(doctor1, 50); 
-		patient1.makePayment(doctor2, 40);
+		Consultation genesisConsult = new Consultation ("genesis", "genesis", null, patient1, doctor1, "Consultation Genesis");
 		
+		// Create Data genesis transaction
+		genesisTransactionData = new Transaction(coinbase.publicKey, coinbase.publicKey, "0", genesisConsult, false, null);
+		genesisTransactionData.generateSignature(coinbase.privateKey);	 //manually sign the genesis transaction	
+		genesisTransactionData.transactionId = "0"; //manually set the transaction id
+
+		System.out.println("Creating and Mining Data Genesis block... ");
+		Block genesisData = new Block("0");
+		genesisData.addTransaction(genesisTransactionData);
+		chainData.addBlock(genesis); 
+		
+		
+		PublicKey tempKey = patient1.makePayment(doctor1, consultPrice);  
 		
 		chainPay.getDataFrom(patient1.getWallet().publicKey, doctor1.getWallet().publicKey);
-		chainPay.isChainValid(); 
+		chainPay.isChainValid();  
 		
-		/*
-		chainData.getDataFrom(walletB.publicKey, walletA.publicKey);
+		Treatment treat1 = new Treatment ("ipuprofen", "every day, 200mg"); 
+		ArrayList <Treatment> tempTreats = new ArrayList <Treatment> ();
+		tempTreats.add(treat1);
+		Report report1 = new Report (tempTreats, "Migraine");
+		Consultation consult1 = new Consultation ("9/08/2018", "check-up", report1, patient1, doctor1, "Consultation #1");
+		
+		doctor1.storeConsult(patient1, consult1);
+		
+		chainData.getDataFrom(patient1.getWallet().publicKey, doctor1.getWallet().publicKey);
 		chainData.isChainValid();   
-		*/
+		
 				
 		/*
 				

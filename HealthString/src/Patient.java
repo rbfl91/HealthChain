@@ -10,22 +10,31 @@ import java.util.Map;
 
 public class Patient { 
 	
-	private String name; 
+	private String name;  
+	private String login; 
+	private String password; 
+	private Address addr;
 	private Wallet wallet; 
 	
-	public Patient (String name) { 
+	public Patient (String name, String login, String password, Address addr) { 
 		
-		this.name = name; 
+		this.name = name;  
+		this.login = login; 
+		this.password = password; 
+		this.addr = addr;
 		this.wallet = new Wallet();
 	}  
 	
 	
 	
-	public void makePayment (Doctor doctor, float value) { 
+	public PublicKey makePayment (Doctor doctor, float value) {  
+		
+		PublicKey toReturn = null;
 		
 		if (this.wallet.getBalance() < value) { 
 			
-			System.out.println("Not enough funds to make payment.");
+			Main.hasPayed = false;
+			System.out.println("Not enough funds to make payment."); 
 		} 
 		else { 
 			
@@ -36,9 +45,14 @@ public class Patient {
 			newBlock.addTransaction(this.wallet.sendFunds(doctor.getWallet().publicKey, value));
 			Main.chainPay.addBlock(newBlock);
 			System.out.println("\nPatient " + this.name + "'s balance is: " + this.wallet.getBalance());
-			System.out.println("\nDoctor " + doctor.getName() + "'s balance is: " + doctor.getWallet().getBalance());
+			System.out.println("\nDoctor " + doctor.getName() + "'s balance is: " + doctor.getWallet().getBalance()); 
+			
+			Main.hasPayed = true;
+			toReturn = this.wallet.publicKey;
 			
 		}
+		
+		return toReturn;
 	}
 	
 	public String getName () { 

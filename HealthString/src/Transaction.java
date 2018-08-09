@@ -18,11 +18,11 @@ public class Transaction {
 	
 	// HERE
 	// Constructor: 
-	public Transaction(PublicKey from, PublicKey to, String data, boolean isPayment,  ArrayList<TransactionInput> inputs) {
+	public Transaction(PublicKey from, PublicKey to, String value, Consultation consult, boolean isPayment,  ArrayList<TransactionInput> inputs) {
 		this.sender = from;
 		this.reciepient = to;
 		this.inputs = inputs; 
-		this.data = new Data (isPayment, data);  
+		this.data = new Data (isPayment, value, consult);  
 		
 		if (this.data.isPayment) { 
 			
