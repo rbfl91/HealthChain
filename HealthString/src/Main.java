@@ -22,7 +22,7 @@ public class Main {
 	public static Transaction genesisTransactionData; 
 	
 	// The consultation price
-	public static float consultPrice = 90; 
+	public static float consultPrice = 80; 
 	
 	// Flag to check if the payment has been made 
 	public static Boolean hasPayed;
@@ -70,8 +70,8 @@ public class Main {
 		chainPay.getDataFrom(patient1.getWallet().publicKey, doctor1.getWallet().publicKey);
 		chainPay.isChainValid();  
 		
-		Treatment treat1 = new Treatment ("ipuprofen", "every day, 200mg"); 
-		ArrayList <Treatment> tempTreats = new ArrayList <Treatment> ();
+		Medication treat1 = new Medication ("ibuprofen", "every day, 200mg"); 
+		ArrayList <Medication> tempTreats = new ArrayList <Medication> ();
 		tempTreats.add(treat1);
 		Report report1 = new Report (tempTreats, "Migraine");
 		Consultation consult1 = new Consultation ("9/08/2018", "check-up", report1, patient1, doctor1, "Consultation #1");

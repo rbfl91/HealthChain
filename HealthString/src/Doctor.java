@@ -21,7 +21,7 @@ public class Doctor {
 		
 		if (Main.hasPayed == false) { 
 			
-			System.out.println("The patiet has not made the payment."); 
+			System.out.println("The patient has not made the payment."); 
 		} 
 		else { 
 			

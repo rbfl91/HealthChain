@@ -2,13 +2,13 @@ import java.util.ArrayList;
 
 public class Report { 
 	
-	public ArrayList<Treatment>  treats; 
+	public ArrayList<Medication> medications; 
 	
 	public String diagnosis;
 	
-	public Report (ArrayList<Treatment> treats, String diagnosis) { 
+	public Report (ArrayList<Medication> meds, String diagnosis) { 
 		
-		this.treats = treats; 
+		this.medications = meds; 
 		this.diagnosis = diagnosis;
 	}
 
