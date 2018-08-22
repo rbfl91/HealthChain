@@ -8,24 +8,13 @@ import com.google.gson.GsonBuilder;
 import java.util.Map; 
 
 
-public class Patient { 
-	
-	private String name;  
-	private String login; 
-	private String password; 
-	private Address addr;
-	private Wallet wallet; 
+public class Patient extends User { 
 	
 	public Patient (String name, String login, String password, Address addr) { 
 		
-		this.name = name;  
-		this.login = login; 
-		this.password = password; 
-		this.addr = addr;
-		this.wallet = new Wallet();
+		super(name, login, password, addr); 
+		
 	}  
-	
-	
 	
 	public PublicKey makePayment (Doctor doctor, float value) {  
 		
@@ -53,16 +42,6 @@ public class Patient {
 		}
 		
 		return toReturn;
-	}
-	
-	public String getName () { 
-		
-		return this.name;
-	} 
-	
-	public Wallet getWallet () { 
-		
-		return this.wallet;
 	}
 
 }

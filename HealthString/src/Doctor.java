@@ -1,20 +1,13 @@
 import java.security.PublicKey;
 
-public class Doctor { 
+public class Doctor extends User { 
 	
-	private String name; 
-	private String login; 
-	private String password; 
-	private Address addr;
-	private Wallet wallet; 
+	
 	
 	public Doctor (String name, String login, String password, Address addr) { 
 		
-		this.name = name;  
-		this.login = login; 
-		this.password = password; 
-		this.addr = addr;
-		this.wallet = new Wallet();
+		super(name, login, password, addr);
+	
 	}    
 	
 	public void storeConsult (Patient patient, Consultation consult) {  
@@ -34,16 +27,6 @@ public class Doctor {
 			
 		}
 		
-	}
-	
-	public String getName () { 
-		
-		return this.name;
-	} 
-	
-	public Wallet getWallet () { 
-		
-		return this.wallet;
 	}
 
 }
