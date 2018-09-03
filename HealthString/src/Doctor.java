@@ -20,7 +20,7 @@ public class Doctor extends User {
 			
 			String previousHash = Main.chainData.blockchain.get(Main.chainData.blockchain.size() - 1).hash; 
 			Block newBlock = new Block(previousHash); 
-			newBlock.addTransaction(this.wallet.sendData(patient.getWallet().publicKey, consult));
+			newBlock.addTransaction(this.getWallet().sendData(patient.getWallet().publicKey, consult));
 			Main.chainData.addBlock(newBlock); 
 			
 			Main.hasPayed = false;

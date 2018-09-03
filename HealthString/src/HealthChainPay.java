@@ -10,17 +10,15 @@ import java.util.Map;
 
 public class HealthChainPay {
 	
-	public ArrayList<Block> blockchain;
-	//public HashMap<String,TransactionOutput> UTXOs;
-	
-	public int difficulty = 3;
+	public ArrayList<Block> blockchain; 
+	public static HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
+	public int difficulty;
 	public static float minimumTransaction = 0.1f;
 	
-	public HealthChainPay () { 
+	public HealthChainPay (int difficulty) { 
 		
+		this.difficulty = difficulty;
 		this.blockchain = new ArrayList<Block>(); 
-		// EDIT 25/02: removed local UTXOs
-		//this.UTXOs = new HashMap<String,TransactionOutput>();
 		
 	}
 
@@ -33,7 +31,7 @@ public class HealthChainPay {
 		// HERE STATIC
 		tempUTXOs.put(Main.genesisTransaction.outputs.get(0).id, Main.genesisTransaction.outputs.get(0));
 		
-		//loop through blockchain to check hashes:
+		//loop through the blockchain to check hashes:
 		for(int i=1; i < blockchain.size(); i++) {
 			
 			currentBlock = blockchain.get(i);
@@ -54,7 +52,7 @@ public class HealthChainPay {
 				return false;
 			}
 			
-			//loop thru blockchains transactions:
+			//loop through the block's transactions:
 			TransactionOutput tempOutput;
 			for(int t=0; t <currentBlock.transactions.size(); t++) {
 				Transaction currentTransaction = currentBlock.transactions.get(t);
@@ -64,7 +62,7 @@ public class HealthChainPay {
 					return false; 
 				}
 				if(currentTransaction.getInputsValue() != currentTransaction.getOutputsValue()) {
-					System.out.println("#Inputs are note equal to outputs on Transaction(" + t + ")");
+					System.out.println("#Inputs are not equal to outputs on Transaction(" + t + ")");
 					return false; 
 				}
 				

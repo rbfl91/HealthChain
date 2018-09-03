@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class Transaction {
 	
-	public String transactionId; //Contains a hash of transaction*
+	public String transactionId; //Contains the hash of the transaction
 	public PublicKey sender; //Senders address/public key.
 	public PublicKey reciepient; //Recipients address/public key.
 	public float value; //Contains the amount we wish to send to the recipient. 
@@ -48,7 +48,7 @@ public class Transaction {
 		//Gathers transaction inputs (Making sure they are unspent):
 		// HERE STATIC
 		for(TransactionInput i : inputs) {
-			i.UTXO = Main.UTXOs.get(i.transactionOutputId);
+			i.UTXO = HealthChainPay.UTXOs.get(i.transactionOutputId);
 		}
 
 		//Checks if transaction is valid:
@@ -67,14 +67,14 @@ public class Transaction {
 		//Add outputs to Unspent list 
 		//HERE STATIC
 		for(TransactionOutput o : outputs) {
-			Main.UTXOs.put(o.id , o);
+			HealthChainPay.UTXOs.put(o.id , o);
 		}
 		
 		//Remove transaction inputs from UTXO lists as spent: 
 		// HERE STATIC
 		for(TransactionInput i : inputs) {
 			if(i.UTXO == null) continue; //if Transaction can't be found skip it 
-			Main.UTXOs.remove(i.UTXO.id);
+			HealthChainPay.UTXOs.remove(i.UTXO.id);
 		}
 		
 		return true;

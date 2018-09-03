@@ -20,7 +20,7 @@ public class Patient extends User {
 		
 		PublicKey toReturn = null;
 		
-		if (this.wallet.getBalance() < value) { 
+		if (this.getWallet().getBalance() < value) { 
 			
 			Main.hasPayed = false;
 			System.out.println("Not enough funds to make payment."); 
@@ -29,15 +29,15 @@ public class Patient extends User {
 			
 			String previousHash = Main.chainPay.blockchain.get(Main.chainPay.blockchain.size() - 1).hash; 
 			Block newBlock = new Block(previousHash); 
-			System.out.println("\nPatient " + this.name + "'s balance is: " + this.wallet.getBalance());
+			System.out.println("\nPatient " + this.getName() + "'s balance is: " + this.getWallet().getBalance());
 			System.out.println("\nDoctor " + doctor.getName() + "'s balance is: " + doctor.getWallet().getBalance());
-			newBlock.addTransaction(this.wallet.sendFunds(doctor.getWallet().publicKey, value));
+			newBlock.addTransaction(this.getWallet().sendFunds(doctor.getWallet().publicKey, value));
 			Main.chainPay.addBlock(newBlock);
-			System.out.println("\nPatient " + this.name + "'s balance is: " + this.wallet.getBalance());
+			System.out.println("\nPatient " + this.getName() + "'s balance is: " + this.getWallet().getBalance());
 			System.out.println("\nDoctor " + doctor.getName() + "'s balance is: " + doctor.getWallet().getBalance()); 
 			
 			Main.hasPayed = true;
-			toReturn = this.wallet.publicKey;
+			toReturn = this.getWallet().publicKey;
 			
 		}
 		

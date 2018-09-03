@@ -6,10 +6,12 @@ public class HealthChainData {
 	
 	public ArrayList<Block> blockchain = new ArrayList<Block>(); 
 	
-	public int difficulty = 3; 
+	public int difficulty; 
 	
-	public HealthChainData () { 
+	public HealthChainData (int difficulty) {  
 		
+		
+		this.difficulty = difficulty;
 		this.blockchain = new ArrayList<Block>(); 
 		
 	}

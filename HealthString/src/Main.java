@@ -1,3 +1,4 @@
+import java.io.File;
 import java.security.*;
 import java.security.Security; 
 import java.security.spec.ECGenParameterSpec;
@@ -6,14 +7,12 @@ import java.util.Base64;
 import java.util.HashMap;
 import com.google.gson.GsonBuilder;
 import java.util.Map; 
+import java.sql.*;
 
 public class Main {  
 	
-	// Unique list of UTXOs that will be used for the payment blockchain
-	public static HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>(); 
-	
-	public static HealthChainPay chainPay = new HealthChainPay(); 
-	public static HealthChainData chainData = new HealthChainData();
+	public static HealthChainPay chainPay = new HealthChainPay(3); 
+	public static HealthChainData chainData = new HealthChainData(3);
 	
 	// The first payment transaction 
 	public static Transaction genesisTransaction;  
@@ -30,8 +29,16 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub  
 		
-		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); //Setup Bouncey castle as a Security Provider
-				
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); //Setup Bouncey castle as a Security Provider 
+		
+		// Data Base and Genesis Blocks Operations:
+		
+		ArrayList<Patient> patients = dbGetPatients(); 
+		
+		ArrayList<Doctor> doctors = dbGetDoctors(); 
+		
+		ArrayList<Consultation> consults = dbGetConsults(doctors, patients);  	
+		
 		Address addr1 = new Address ("Nottingham", "UK", "Mount Street", "NG1 6HE", "52.954783, -1.158109"); 
 		Address addr2 = new Address ("Nottingham", "UK", "New Castle Road", "NG1 6HE", "52.954783, -1.158109");
 		
@@ -45,7 +52,7 @@ public class Main {
 		genesisTransaction.generateSignature(coinbase.privateKey);	 //manually sign the genesis transaction	
 		genesisTransaction.transactionId = "0"; //manually set the transaction id
 		genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId)); //manually add the Transactions Output
-		UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); //its important to store our first transaction in the UTXOs list.
+		HealthChainPay.UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); //its important to store our first transaction in the UTXOs list.
 		
 		System.out.println("Creating and Mining Payment Genesis block... ");
 		Block genesis = new Block("0");
@@ -64,6 +71,9 @@ public class Main {
 		genesisData.addTransaction(genesisTransactionData);
 		chainData.addBlock(genesis); 
 		
+		storeConsultsOnBlockchain (consults); 
+		
+		// Testing payment and data transactions:
 		
 		PublicKey tempKey = patient1.makePayment(doctor1, consultPrice);  
 		
@@ -80,64 +90,180 @@ public class Main {
 		
 		chainData.getDataFrom(patient1.getWallet().publicKey, doctor1.getWallet().publicKey);
 		chainData.isChainValid();   
+
+	} 
+	
+	public static ArrayList<Patient> dbGetPatients() { 
 		
-				
-		/*
-				
-				//Create wallets:
-				walletA = new Wallet();
-				walletB = new Wallet();		
-				Wallet coinbase = new Wallet();
-				
-				//create genesis transaction, which sends 100 NoobCoin to walletA: 
-				genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, "100", true, null);
-				genesisTransaction.generateSignature(coinbase.privateKey);	 //manually sign the genesis transaction	
-				genesisTransaction.transactionId = "0"; //manually set the transaction id
-				genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId)); //manually add the Transactions Output
-				UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); //its important to store our first transaction in the UTXOs list.
-				
-				System.out.println("Creating and Mining Genesis block... ");
-				Block genesis = new Block("0");
-				genesis.addTransaction(genesisTransaction);
-				chainPay.addBlock(genesis);
-				
-				//testing
-				Block block1 = new Block(genesis.hash);
-				System.out.println("\nWalletA's balance is: " + walletA.getBalance());
-				System.out.println("\nWalletA is Attempting to send funds (40) to WalletB...");
-				block1.addTransaction(walletA.sendFunds(walletB.publicKey, 40f));
-				chainPay.addBlock(block1);
-				System.out.println("\nWalletA's balance is: " + walletA.getBalance());
-				System.out.println("WalletB's balance is: " + walletB.getBalance());
-				
-				Block block2 = new Block(block1.hash);
-				System.out.println("\nWalletA Attempting to send more funds (1000) than it has...");
-				block2.addTransaction(walletA.sendFunds(walletB.publicKey, 1000f));
-				chainPay.addBlock(block2);
-				System.out.println("\nWalletA's balance is: " + walletA.getBalance());
-				System.out.println("WalletB's balance is: " + walletB.getBalance());
-				
-				Block block3 = new Block(block2.hash);
-				System.out.println("\nWalletB is Attempting to send funds (20) to WalletA...");
-				block3.addTransaction(walletB.sendFunds( walletA.publicKey, 20)); 
-				chainPay.addBlock(block3);
-				System.out.println("\nWalletA's balance is: " + walletA.getBalance());
-				System.out.println("WalletB's balance is: " + walletB.getBalance());  
-				
-				//DataChain genesis block
-				Block block4 = new Block("0"); 
-				System.out.println("\nWalletB is Attempting to send data to WalletA...");
-				block4.addTransaction(walletB.sendData(walletA.publicKey, "Medical Data from Wallet B[1]")); 
-				chainData.addBlock(block4);  
-				
-				Block block5 = new Block(block4.hash);
-				System.out.println("\nWalletB is Attempting to send data to WalletA...");
-				block5.addTransaction(walletB.sendData(walletA.publicKey, "Medical Data from Wallet B[2]")); 
-				chainData.addBlock(block5);  
-				
-				*/
-				
+		ArrayList<Patient> patients_temp = new ArrayList<Patient>();
+		
+		
+		   Connection c = null;
+		   Statement stmt1 = null; 
+		   Statement stmt2 = null;
+		   try {
+		      Class.forName("org.sqlite.JDBC");
+		      c = DriverManager.getConnection("jdbc:sqlite:db.sqlite3");
+		      c.setAutoCommit(false);
+		      System.out.println("Opened database successfully");
 
+		      stmt1 = c.createStatement(); 
+		      stmt2 = c.createStatement();
+		      ResultSet rs_patient = stmt1.executeQuery( "SELECT * FROM mockaroo_patient;" ); 
+		      ResultSet rs_user = stmt2.executeQuery( "SELECT * FROM mockaroo_user;" );
+		      
+		      while (rs_patient.next() && rs_user.next()){ 
+		    	  
+		         int id = rs_patient.getInt("id");
+		         String  name = rs_patient.getString("name"); 
+		     
+		         String  city = rs_user.getString("city"); 
+		         String  country = rs_user.getString("country"); 
+		         String  street = rs_user.getString("street"); 
+		         String  postCode = rs_user.getString("postcode"); 
+		         String  coords = rs_user.getString("coodinates");  
+		         
+		         
+		         
+		         Address address_temp = new Address (city, country, street, postCode, coords); 
+		         
+		         patients_temp.add(new Patient (name, name, name + "123", address_temp));
+		         
+		      }
+		      rs_patient.close(); 
+		      rs_user.close();
+		      stmt1.close(); 
+		      stmt2.close();
+		      c.close();
+		   } catch ( Exception e ) {
+		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+		      System.exit(0);
+		   }
+		   System.out.println("Operation done successfully");
+		
+			
+		   return patients_temp; 
+	} 
+	
+	public static ArrayList<Doctor> dbGetDoctors() { 
+		
+		ArrayList<Doctor> doctors_temp = new ArrayList<Doctor>();
+		
+		
+		   Connection c = null;
+		   Statement stmt1 = null; 
+		   try {
+		      Class.forName("org.sqlite.JDBC");
+		      c = DriverManager.getConnection("jdbc:sqlite:db.sqlite3");
+		      c.setAutoCommit(false);
+		      System.out.println("Opened database successfully");
+
+		      stmt1 = c.createStatement(); 
+		      ResultSet rs_doctor = stmt1.executeQuery( "SELECT * FROM mockaroo_doctor;" ); 
+		      
+		      while (rs_doctor.next()){ 
+		    	  
+		         int id = rs_doctor.getInt("id");
+		         String  name = rs_doctor.getString("name"); 
+		     
+		         doctors_temp.add(new Doctor (name, name, name + "123", null));
+		         
+		      }
+		      rs_doctor.close(); 
+		      stmt1.close(); 
+		      c.close();
+		   } catch ( Exception e ) {
+		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+		      System.exit(0);
+		   }
+		   System.out.println("Operation done successfully");
+		
+			
+		   return doctors_temp; 
+	}  
+	
+	public static ArrayList<Consultation> dbGetConsults(ArrayList<Doctor> doctors, ArrayList<Patient> patients) { 
+		
+		ArrayList<Consultation> consults_temp = new ArrayList<Consultation>();
+		
+		
+		   Connection c = null;
+		   Statement stmt1 = null;  
+		   Statement stmt2 = null;  
+		   Statement stmt3 = null; 
+		   try {
+		      Class.forName("org.sqlite.JDBC");
+		      c = DriverManager.getConnection("jdbc:sqlite:db.sqlite3");
+		      c.setAutoCommit(false);
+		      System.out.println("Opened database successfully");
+
+		      stmt1 = c.createStatement(); 
+		      ResultSet rs_consults = stmt1.executeQuery( "SELECT * FROM mockaroo_consultation;" );  
+		      
+		      stmt2 = c.createStatement(); 
+		      ResultSet rs_meds = stmt2.executeQuery( "SELECT * FROM mockaroo_treatmeds;" );  
+		      
+		      stmt3 = c.createStatement(); 
+		      ResultSet rs_reports = stmt3.executeQuery( "SELECT * FROM mockaroo_report;" ); 
+		      
+		      while (rs_meds.next() && rs_consults.next() && rs_reports.next()){ 
+		    	 
+		         String med_name = rs_meds.getString("med_name");  
+		         String posology = rs_meds.getString("posology");
+		     
+		         Medication medication_temp = new Medication (med_name, posology);
+		         ArrayList<Medication> meds_temp = new ArrayList<Medication>(); 
+		         meds_temp.add(medication_temp);
+		         
+		         String diagnosis = rs_reports.getString("diagnosis"); 
+		         
+		         Report report_temp = new Report (meds_temp, diagnosis);  
+		         
+		         String consult_date = rs_consults.getString("date");  
+		         String consult_type = rs_consults.getString("_type");
+		         int patient_id = rs_consults.getInt("patient_id"); 
+		         int doctor_id = rs_consults.getInt("doctor_id"); 
+		         int consult_id = rs_consults.getInt("id");
+		         
+		         consults_temp.add(new Consultation(consult_date, consult_type, report_temp, patients.get(patient_id - 1), doctors.get(doctor_id - 1), Integer.toString(consult_id)));
+		         
+		      }
+		      rs_meds.close();  
+		      rs_reports.close(); 
+		      rs_consults.close(); 
+		      
+		      stmt1.close();  
+		      stmt2.close();  
+		      stmt3.close(); 
+		      
+		      c.close();
+		   } catch ( Exception e ) {
+		      System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+		      System.exit(0);
+		   }
+		   System.out.println("Operation done successfully");
+		
+			
+		   return consults_temp; 
 	}
-
+	
+	public static void storeConsultsOnBlockchain (ArrayList<Consultation> consults) { 
+		
+		int count = 1;
+		for (Consultation p : consults){  
+			
+			System.out.println("Storing consult: " + count);
+			System.out.println(p.patient.getName()); 
+			System.out.println(p.doctor.getName());    
+			
+			String previousHash = Main.chainData.blockchain.get(Main.chainData.blockchain.size() - 1).hash; 
+			Block newBlock = new Block(previousHash); 
+			newBlock.addTransaction(p.doctor.getWallet().sendData(p.patient.getWallet().publicKey, p));
+			Main.chainData.addBlock(newBlock);
+			
+			count++; 
+		} 
+		
+	}
+	
 }

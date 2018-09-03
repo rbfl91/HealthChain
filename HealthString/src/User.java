@@ -1,10 +1,10 @@
 public class User { 
 	
-	protected String name; 
+	private String name; 
 	protected String login; 
 	protected String password; 
 	protected Address addr;
-	protected Wallet wallet; 
+	private Wallet wallet; 
 	
 	public User (String name, String login, String password, Address addr) { 
 		
