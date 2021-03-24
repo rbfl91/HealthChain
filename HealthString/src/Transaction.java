@@ -89,13 +89,11 @@ public class Transaction {
 		return total;
 	}
 	
-	// HERE
 	public void generateSignature(PrivateKey privateKey) {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value) + this.data.getData();
 		signature = StringUtil.applyECDSASig(privateKey,data);		
 	}
 	
-	// HERE
 	public boolean verifySignature() {
 		String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value) + this.data.getData();
 		return StringUtil.verifyECDSASig(sender, data, signature);
@@ -109,7 +107,6 @@ public class Transaction {
 		return total;
 	}
 	
-	// HERE
 	private String calulateHash() {
 		sequence++; //increase the sequence to avoid 2 identical transactions having the same hash
 		return StringUtil.applySha256(
